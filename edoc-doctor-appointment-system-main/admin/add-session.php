@@ -21,9 +21,10 @@
         $date=$_POST["date"];
         $time=$_POST["time"];
         $venueid=$_POST["venueid"];
+        $price = $_POST["price"];
        
-        $sql= "INSERT INTO schedule (docid, title, scheduledate, scheduletime, nop, venue_id) 
-        VALUES ($docid, '$title', '$date', '$time', $nop, $venueid);";
+       $sql = "INSERT INTO schedule (docid, title, scheduledate, scheduletime, nop, venue_id, price) 
+            VALUES ($docid, '$title', '$date', '$time', $nop, $venueid, $price);";
 
         $result= $database->query($sql);
         header("location: schedule.php?action=session-added&title=$title");

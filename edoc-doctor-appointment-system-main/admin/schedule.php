@@ -257,12 +257,12 @@
                                 </th>
                                 <th class="table-headin">
                                     
-                                    Sheduled Date & Time
+                                    Sheduled
                                     
                                 </th>
                                 <th class="table-headin">
                                     
-                                Max num that can be booked
+                                Booking limit
                                     
                                 </th>
                                 
@@ -273,68 +273,67 @@
                                 </tr>
                         </thead>
                         <tbody>
-                        
-                            <?php
+    <?php
+        $result = $database->query($sqlmain);
 
-                                
-                                $result= $database->query($sqlmain);
+        if ($result->num_rows == 0) {
+            echo '
+            <tr>
+                <td colspan="4">
+                    <br><br><br><br>
+                    <center>
+                        <img src="../img/notfound.svg" width="25%">
+                        <br>
+                        <p class="heading-main12" style="margin-left: 45px;font-size:20px;color:rgb(49, 49, 49)">
+                            We couldn\'t find anything related to your keywords!
+                        </p>
+                        <a class="non-style-link" href="schedule.php">
+                            <button class="login-btn btn-primary-soft btn" style="display: flex;justify-content: center;align-items: center;margin-left:20px;">
+                                &nbsp; Show all Sessions &nbsp;
+                            </button>
+                        </a>
+                    </center>
+                    <br><br><br><br>
+                </td>
+            </tr>';
+        } else {
+            while ($row = $result->fetch_assoc()) {
+                $scheduleid = $row["scheduleid"];
+                $title = $row["title"];
+                $docname = $row["docname"];
+                $scheduledate = $row["scheduledate"];
+                $scheduletime = $row["scheduletime"];
+                $nop = $row["nop"];
 
-                                if($result->num_rows==0){
-                                    echo '<tr>
-                                    <td colspan="4">
-                                    <br><br><br><br>
-                                    <center>
-                                    <img src="../img/notfound.svg" width="25%">
-                                    
-                                    <br>
-                                    <p class="heading-main12" style="margin-left: 45px;font-size:20px;color:rgb(49, 49, 49)">We  couldnt find anything related to your keywords !</p>
-                                    <a class="non-style-link" href="schedule.php"><button  class="login-btn btn-primary-soft btn"  style="display: flex;justify-content: center;align-items: center;margin-left:20px;">&nbsp; Show all Sessions &nbsp;</font></button>
-                                    </a>
-                                    </center>
-                                    <br><br><br><br>
-                                    </td>
-                                    </tr>';
-                                    
-                                }
-                                else{
-                                for ( $x=0; $x<$result->num_rows;$x++){
-                                    $row=$result->fetch_assoc();
-                                    $scheduleid=$row["scheduleid"];
-                                    $title=$row["title"];
-                                    $docname=$row["docname"];
-                                    $scheduledate=$row["scheduledate"];
-                                    $scheduletime=$row["scheduletime"];
-                                    $nop=$row["nop"];
-                                    echo '<tr>
-                                        <td> &nbsp;'.
-                                        substr($title,0,30)
-                                        .'</td>
-                                        <td>
-                                        '.substr($docname,0,20).'
-                                        </td>
-                                        <td style="text-align:center;">
-                                            '.substr($scheduledate,0,10).' '.substr($scheduletime,0,5).'
-                                        </td>
-                                        <td style="text-align:center;">
-                                            '.$nop.'
-                                        </td>
+                echo '
+                <tr>
+                    <td>&nbsp;' . substr($title, 0, 30) . '</td>
+                    <td>' . substr($docname, 0, 20) . '</td>
+                    <td style="text-align:center;">
+                        ' . substr($scheduledate, 0, 10) . ' ' . substr($scheduletime, 0, 5) . '
+                    </td>
+                    <td style="text-align:center;">' . $nop . '</td>
+                    <td>
+                        <div style="display:flex;justify-content: center;">
+                            <a href="?action=view&id=' . $scheduleid . '" class="non-style-link">
+                                <button class="btn-primary-soft btn button-icon btn-view">View</button>
+                            </a>
+                            &nbsp;&nbsp;&nbsp;
+                            <a href="?action=edit&id=' . $scheduleid . '" class="non-style-link">
+                                <button class="btn-primary-soft btn button-icon btn-edit">Edit</button>
+                            </a>
+                            &nbsp;&nbsp;&nbsp;
+                            <a href="?action=drop&id=' . $scheduleid . '&name=' . urlencode($title) . '" class="non-style-link">
+                                <button class="btn-primary-soft btn button-icon btn-delete">Remove</button>
+                            </a>
+                        </div>
+                    </td>
+                </tr>';
+            }
+        }
+    ?>
+</tbody>
 
-                                        <td>
-                                        <div style="display:flex;justify-content: center;">
-                                        
-                                        <a href="?action=view&id='.$scheduleid.'" class="non-style-link"><button  class="btn-primary-soft btn button-icon btn-view"  style="padding-left: 40px;padding-top: 12px;padding-bottom: 12px;margin-top: 10px;"><font class="tn-in-text">View</font></button></a>
-                                       &nbsp;&nbsp;&nbsp;
-                                       <a href="?action=drop&id='.$scheduleid.'&name='.$title.'" class="non-style-link"><button  class="btn-primary-soft btn button-icon btn-delete"  style="padding-left: 40px;padding-top: 12px;padding-bottom: 12px;margin-top: 10px;"><font class="tn-in-text">Remove</font></button></a>
-                                        </div>
-                                        </td>
-                                    </tr>';
-                                    
-                                }
-                            }
-                                 
-                            ?>
- 
-                            </tbody>
 
                         </table>
                         </div>
@@ -348,381 +347,244 @@
         </div>
     </div>
     <?php
-    
-    if($_GET){
-        $id=$_GET["id"];
-        $action=$_GET["action"];
-        if($action=='add-session'){
+if (isset($_GET['action'])) {
+    $action = $_GET['action'];
+    $id = $_GET['id'] ?? null;
 
+    // Handle adding a new session
+    if ($action === 'add-session') {
+        echo '
+        <div id="popup1" class="overlay">
+            <div class="popupedit">
+                <center>
+                    <a class="close" href="schedule.php">&times;</a>
+                    <h2>Add New Session</h2>
+                    <form action="add-session.php" method="POST" class="add-new-form">
+                        <label for="title">Session Title:</label>
+                        <input type="text" name="title" class="input-text" placeholder="Session Title" required><br>
+
+                        <label for="docid">Select Doctor:</label>
+                        <select name="docid" class="box" required>
+                            <option value="" disabled selected>Select Doctor</option>';
+        
+        $doctors = $database->query("SELECT * FROM doctor ORDER BY docname ASC");
+        while ($doctor = $doctors->fetch_assoc()) {
+            echo "<option value='{$doctor['docid']}'>{$doctor['docname']}</option>";
+        }
+        
+        echo '
+                        </select><br><br>
+
+                        <label for="venueid">Select Venue:</label>
+                        <select name="venueid" class="box" required>
+                            <option value="" disabled selected>Select Venue</option>';
+        
+        $venues = $database->query("SELECT * FROM venue ORDER BY venue_id ASC");
+        while ($venue = $venues->fetch_assoc()) {
+            echo "<option value='{$venue['venue_id']}'>{$venue['address']}</option>";
+        }
+
+        echo '
+                        </select><br><br>
+
+                        <label for="nop">Number of Patients:</label>
+                        <input type="number" name="nop" class="input-text" min="1" required><br>
+
+                        <label for="date">Session Date:</label>
+                        <input type="date" name="date" class="input-text" min="' . date('Y-m-d') . '" required><br>
+
+                        <label for="time">Session Time:</label>
+                        <input type="time" name="time" class="input-text" required><br>
+
+                        <label for="price">Doctor\'s Price:</label>
+                        <input type="number" step="0.01" name="price" class="input-text" required><br>
+
+                        <input type="submit" value="Add Session" class="login-btn btn-primary btn">
+                    </form>
+                </center>
+            </div>
+        </div>';
+    }
+
+    // Handle viewing a session
+    elseif ($action === 'view' && $id) {
+    $session = $database->query("
+        SELECT s.scheduleid, s.title, s.scheduledate, s.scheduletime, s.price, 
+               d.docname, v.address 
+        FROM schedule s 
+        INNER JOIN doctor d ON s.docid = d.docid 
+        INNER JOIN venue v ON s.venue_id = v.venue_id 
+        WHERE s.scheduleid = $id
+    ")->fetch_assoc();
+
+    $patients = $database->query("
+        SELECT p.pid, p.pname, a.apponum, p.ptel 
+        FROM appointment a 
+        INNER JOIN patient p ON a.pid = p.pid 
+        WHERE a.scheduleid = $id
+    ");
+
+    echo '
+    <div id="popup1" class="overlay">
+        <div class="popup" style="width: 70%; max-width: 800px;">
+            <center>
+                <a class="close" href="schedule.php">&times;</a>
+                <h2 style="margin-bottom: 15px;">Session Details</h2>
+
+                <table class="sub-table" border="0" style="width: 80%; margin-bottom: 20px; text-align: left;">
+                    <tr>
+                        <th style="width: 30%; padding: 8px;">Title:</th>
+                        <td style="padding: 8px;">' . htmlspecialchars($session['title']) . '</td>
+                    </tr>
+                    <tr>
+                        <th style="padding: 8px;">Doctor:</th>
+                        <td style="padding: 8px;">' . htmlspecialchars($session['docname']) . '</td>
+                    </tr>
+                    <tr>
+                        <th style="padding: 8px;">Venue:</th>
+                        <td style="padding: 8px;">' . htmlspecialchars($session['address']) . '</td>
+                    </tr>
+                    <tr>
+                        <th style="padding: 8px;">Date:</th>
+                        <td style="padding: 8px;">' . htmlspecialchars($session['scheduledate']) . '</td>
+                    </tr>
+                    <tr>
+                        <th style="padding: 8px;">Time:</th>
+                        <td style="padding: 8px;">' . htmlspecialchars($session['scheduletime']) . '</td>
+                    </tr>
+                    <tr>
+                        <th style="padding: 8px;">Price:</th>
+                        <td style="padding: 8px;">' . number_format($session['price'], 2) . '</td>
+                    </tr>
+                </table>
+
+                <h3 style="margin-top: 20px; text-align: left; width: 80%;">Registered Patients (' . $patients->num_rows . ')</h3>
+                <div class="abc scroll" style="width: 80%; max-height: 250px; overflow-y: auto;">
+                    <table class="sub-table scrolldown" border="0" style="width: 100%; text-align: center;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 10px; width: 20%;">Patient ID</th>
+                                <th style="padding: 10px; width: 35%;">Name</th>
+                                <th style="padding: 10px; width: 25%;">Appointment No</th>
+                                <th style="padding: 10px; width: 20%;">Phone</th>
+                            </tr>
+                        </thead>
+                        <tbody>';
+
+    if ($patients->num_rows > 0) {
+        while ($patient = $patients->fetch_assoc()) {
             echo '
-            <div id="popup1" class="overlay">
-                    <div class="popup">
-                    <center>
-                    
-                    
-                        <a class="close" href="schedule.php">&times;</a> 
-                        <div style="display: flex;justify-content: center;">
-                        <div class="abc">
-                        <table width="80%" class="sub-table scrolldown add-doc-form-container" border="0">
-                        <tr>
-                                <td class="label-td" colspan="2">'.
-                                   ""
-                                
-                                .'</td>
-                            </tr>
+            <tr>
+                <td style="padding: 10px;">' . htmlspecialchars($patient['pid']) . '</td>
+                <td style="padding: 10px;">' . htmlspecialchars($patient['pname']) . '</td>
+                <td style="padding: 10px;">' . htmlspecialchars($patient['apponum']) . '</td>
+                <td style="padding: 10px;">' . htmlspecialchars($patient['ptel']) . '</td>
+            </tr>';
+        }
+    } else {
+        echo '
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 15px;">
+                    <p>No patients registered for this session.</p>
+                </td>
+            </tr>';
+    }
 
-                            <tr>
-                                <td>
-                                    <p style="padding: 0;margin: 0;text-align: left;font-size: 25px;font-weight: 500;">Add New Session.</p><br>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                <form action="add-session.php" method="POST" class="add-new-form">
-                                    <label for="title" class="form-label">Session Title : </label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <input type="text" name="title" class="input-text" placeholder="Name of this Session" required><br>
-                                </td>
-                            </tr>
-                            <tr>
-                                
-                                <td class="label-td" colspan="2">
-                                    <label for="docid" class="form-label">Select Doctor: </label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <select name="docid" id="" class="box" >
-                                    <option value="" disabled selected hidden>Choose Doctor Name from the list</option><br/>';
-                                        
-        
-                                        $list11 = $database->query("select  * from  doctor order by docname asc;");
-        
-                                        for ($y=0;$y<$list11->num_rows;$y++){
-                                            $row00=$list11->fetch_assoc();
-                                            $sn=$row00["docname"];
-                                            $id00=$row00["docid"];
-                                            echo "<option value=".$id00.">$sn</option><br/>";
-                                        };
-        
-        
-        
-                                        
-                        echo     '       </select><br><br>
-                                </td>
-                            </tr>
+    echo '
+                        </tbody>
+                    </table>
+                </div>
 
-                            <tr>
-                                
-                                <td class="label-td" colspan="2">
-                                    <label for="docid" class="form-label">Select Venue: </label>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <select name="venueid" id="" class="box" >
-                                    <option value="" disabled selected hidden>Choose Venue from the list</option><br/>';
-                                        
-        
-                                        $list13 = $database->query("select  * from  venue order by venue_id asc;");
-        
-                                        for ($y=0;$y<$list13->num_rows;$y++){
-                                            $row01=$list13->fetch_assoc();
-                                            $sn1=$row01["address"];
-                                            $id01=$row01["venue_id"];
-                                            echo "<option value=".$id01.">$sn1</option><br/>";
-                                        };
-        
-        
-        
-                                        
-                        echo     '       </select><br><br>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <label for="nop" class="form-label">Number of Patients/Appointment Numbers : </label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <input type="number" name="nop" class="input-text" min="0"  placeholder="The final appointment number for this session depends on this number" required><br>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <label for="date" class="form-label">Session Date: </label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <input type="date" name="date" class="input-text" min="'.date('Y-m-d').'" required><br>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <label for="time" class="form-label">Schedule Time: </label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <input type="time" name="time" class="input-text" placeholder="Time" required><br>
-                                </td>
-                            </tr>
-                           
-                            <tr>
-                                <td colspan="2">
-                                    <input type="reset" value="Reset" class="login-btn btn-primary-soft btn" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                
-                                    <input type="submit" value="Place this Session" class="login-btn btn-primary btn" name="shedulesubmit">
-                                </td>
-                
-                            </tr>
-                           
-                            </form>
-                            </tr>
-                        </table>
-                        </div>
-                        </div>
-                    </center>
-                    <br><br>
-            </div>
-            </div>
-            ';
-        }elseif($action=='session-added'){
-            $titleget=$_GET["title"];
-            echo '
-            <div id="popup1" class="overlay">
-                    <div class="popup">
-                    <center>
-                    <br><br>
-                        <h2>Session Placed.</h2>
-                        <a class="close" href="schedule.php">&times;</a>
-                        <div class="content">
-                        '.substr($titleget,0,40).' was scheduled.<br><br>
-                            
-                        </div>
-                        <div style="display: flex;justify-content: center;">
-                        
-                        <a href="schedule.php" class="non-style-link"><button  class="btn-primary btn"  style="display: flex;justify-content: center;align-items: center;margin:10px;padding:10px;"><font class="tn-in-text">&nbsp;&nbsp;OK&nbsp;&nbsp;</font></button></a>
-                        <br><br><br><br>
-                        </div>
-                    </center>
-            </div>
-            </div>
-            ';
-        }elseif($action=='drop'){
-            $nameget=$_GET["name"];
-            echo '
-            <div id="popup1" class="overlay">
-                    <div class="popup">
-                    <center>
-                        <h2>Are you sure?</h2>
-                        <a class="close" href="schedule.php">&times;</a>
-                        <div class="content">
-                            You want to delete this record<br>('.substr($nameget,0,40).').
-                            
-                        </div>
-                        <div style="display: flex;justify-content: center;">
-                        <a href="delete-session.php?id='.$id.'" class="non-style-link"><button  class="btn-primary btn"  style="display: flex;justify-content: center;align-items: center;margin:10px;padding:10px;"<font class="tn-in-text">&nbsp;Yes&nbsp;</font></button></a>&nbsp;&nbsp;&nbsp;
-                        <a href="schedule.php" class="non-style-link"><button  class="btn-primary btn"  style="display: flex;justify-content: center;align-items: center;margin:10px;padding:10px;"><font class="tn-in-text">&nbsp;&nbsp;No&nbsp;&nbsp;</font></button></a>
-
-                        </div>
-                    </center>
-            </div>
-            </div>
-            '; 
-        }elseif($action=='view'){
-            $sqlmain= "select schedule.scheduleid,schedule.title,doctor.docname,schedule.scheduledate,schedule.scheduletime,schedule.nop from schedule inner join doctor on schedule.docid=doctor.docid  where  schedule.scheduleid=$id";
-            $result= $database->query($sqlmain);
-            $row=$result->fetch_assoc();
-            $docname=$row["docname"];
-            $scheduleid=$row["scheduleid"];
-            $title=$row["title"];
-            $scheduledate=$row["scheduledate"];
-            $scheduletime=$row["scheduletime"];
-            
-           
-            $nop=$row['nop'];
+                <a href="schedule.php" class="non-style-link">
+                    <button class="btn-primary btn" style="margin-top: 20px;">Back to Schedule</button>
+                </a>
+            </center>
+        </div>
+    </div>';
+}
 
 
-            $sqlmain12= "select * from appointment inner join patient on patient.pid=appointment.pid inner join schedule on schedule.scheduleid=appointment.scheduleid where schedule.scheduleid=$id;";
-            $result12= $database->query($sqlmain12);
-            echo '
-            <div id="popup1" class="overlay">
-                    <div class="popup" style="width: 70%;">
-                    <center>
-                        <h2></h2>
-                        <a class="close" href="schedule.php">&times;</a>
-                        <div class="content">
-                            
-                            
-                        </div>
-                        <div class="abc scroll" style="display: flex;justify-content: center;">
-                        <table width="80%" class="sub-table scrolldown add-doc-form-container" border="0">
-                        
-                            <tr>
-                                <td>
-                                    <p style="padding: 0;margin: 0;text-align: left;font-size: 25px;font-weight: 500;">View Details.</p><br><br>
-                                </td>
-                            </tr>
-                            
-                            <tr>
-                                
-                                <td class="label-td" colspan="2">
-                                    <label for="name" class="form-label">Session Title: </label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    '.$title.'<br><br>
-                                </td>
-                                
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <label for="Email" class="form-label">Doctor of this session: </label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                '.$docname.'<br><br>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <label for="nic" class="form-label">Scheduled Date: </label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                '.$scheduledate.'<br><br>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <label for="Tele" class="form-label">Scheduled Time: </label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                '.$scheduletime.'<br><br>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label-td" colspan="2">
-                                    <label for="spec" class="form-label"><b>Patients that Already registerd for this session:</b> ('.$result12->num_rows."/".$nop.')</label>
-                                    <br><br>
-                                </td>
-                            </tr>
 
-                            
-                            <tr>
-                            <td colspan="4">
-                                <center>
-                                 <div class="abc scroll">
-                                 <table width="100%" class="sub-table scrolldown" border="0">
-                                 <thead>
-                                 <tr>   
-                                        <th class="table-headin">
-                                             Patient ID
-                                         </th>
-                                         <th class="table-headin">
-                                             Patient name
-                                         </th>
-                                         <th class="table-headin">
-                                             
-                                             Appointment number
-                                             
-                                         </th>
-                                        
-                                         
-                                         <th class="table-headin">
-                                             Patient Telephone
-                                         </th>
-                                         
-                                 </thead>
-                                 <tbody>';
-                                 
-                
-                
-                                         
-                                         $result= $database->query($sqlmain12);
-                
-                                         if($result->num_rows==0){
-                                             echo '<tr>
-                                             <td colspan="7">
-                                             <br><br><br><br>
-                                             <center>
-                                             <img src="../img/notfound.svg" width="25%">
-                                             
-                                             <br>
-                                             <p class="heading-main12" style="margin-left: 45px;font-size:20px;color:rgb(49, 49, 49)">We  couldnt find anything related to your keywords !</p>
-                                             <a class="non-style-link" href="appointment.php"><button  class="login-btn btn-primary-soft btn"  style="display: flex;justify-content: center;align-items: center;margin-left:20px;">&nbsp; Show all Appointments &nbsp;</font></button>
-                                             </a>
-                                             </center>
-                                             <br><br><br><br>
-                                             </td>
-                                             </tr>';
-                                             
-                                         }
-                                         else{
-                                         for ( $x=0; $x<$result->num_rows;$x++){
-                                             $row=$result->fetch_assoc();
-                                             $apponum=$row["apponum"];
-                                             $pid=$row["pid"];
-                                             $pname=$row["pname"];
-                                             $ptel=$row["ptel"];
-                                             
-                                             echo '<tr style="text-align:center;">
-                                                <td>
-                                                '.substr($pid,0,15).'
-                                                </td>
-                                                 <td style="font-weight:600;padding:25px">'.
-                                                 
-                                                 substr($pname,0,25)
-                                                 .'</td >
-                                                 <td style="text-align:center;font-size:23px;font-weight:500; color: var(--btnnicetext);">
-                                                 '.$apponum.'
-                                                 
-                                                 </td>
-                                                 <td>
-                                                 '.substr($ptel,0,25).'
-                                                 </td>
-                                                 
-                                                 
-                
-                                                 
-                                             </tr>';
-                                             
-                                         }
-                                     }
-                                          
-                                     
-                
-                                    echo '</tbody>
-                
-                                 </table>
-                                 </div>
-                                 </center>
-                            </td> 
-                         </tr>
+    // Handle editing a session
+    elseif ($action === 'edit' && $id) {
+        $session = $database->query("SELECT * FROM schedule WHERE scheduleid = $id")->fetch_assoc();
 
-                        </table>
-                        </div>
-                    </center>
-                    <br><br>
+        echo '
+        <div id="popup1" class="overlay">
+            <div class="popupedit">
+                <center>
+                    <a class="close" href="schedule.php">&times;</a>
+                    <h2>Edit Session</h2>
+                    <form action="edit-session.php" method="POST" class="add-new-form">
+                        <input type="hidden" name="scheduleid" value="' . $id . '">
+
+                        <label for="title">Session Title:</label>
+                        <input type="text" name="title" class="input-text" value="' . $session['title'] . '" required><br>
+
+                        <label for="docid">Select Doctor:</label>
+                        <select name="docid" class="box">';
+        
+        $doctors = $database->query("SELECT * FROM doctor ORDER BY docname ASC");
+        while ($doctor = $doctors->fetch_assoc()) {
+            $selected = $doctor['docid'] == $session['docid'] ? 'selected' : '';
+            echo "<option value='{$doctor['docid']}' $selected>{$doctor['docname']}</option>";
+        }
+
+        echo '
+                        </select><br><br>
+
+                        <label for="venueid">Select Venue:</label>
+                        <select name="venueid" class="box">';
+
+        $venues = $database->query("SELECT * FROM venue ORDER BY venue_id ASC");
+        while ($venue = $venues->fetch_assoc()) {
+            $selected = $venue['venue_id'] == $session['venue_id'] ? 'selected' : '';
+            echo "<option value='{$venue['venue_id']}' $selected>{$venue['address']}</option>";
+        }
+
+        echo '
+                        </select><br><br>
+
+                        <label for="nop">Number of Patients:</label>
+                        <input type="number" name="nop" class="input-text" value="' . $session['nop'] . '" required><br>
+
+                        <label for="date">Session Date:</label>
+                        <input type="date" name="date" class="input-text" value="' . $session['scheduledate'] . '" required><br>
+
+                        <label for="time">Session Time:</label>
+                        <input type="time" name="time" class="input-text" value="' . $session['scheduletime'] . '" required><br>
+
+                        <label for="price">Doctor\'s Price:</label>
+                        <input type="number" step="0.01" name="price" class="input-text" value="' . $session['price'] . '" required><br>
+
+                        <input type="submit" value="Save Changes" class="login-btn btn-primary btn">
+                    </form>
+                </center>
             </div>
+        </div>';
+    }
+
+    // Handle deleting a session
+    elseif ($action === 'drop' && $id) {
+        echo '
+        <div id="popup1" class="overlay">
+            <div class="popup">
+                <center>
+                    <h2>Are you sure?</h2>
+                    <p>You want to delete this session?</p>
+                    <a href="delete-session.php?id=' . $id . '" class="non-style-link">
+                        <button class="btn-primary">Yes</button>
+                    </a>
+                    <a href="schedule.php" class="non-style-link">
+                        <button class="btn-primary">No</button>
+                    </a>
+                </center>
             </div>
-            ';  
+        </div>';
     }
 }
-        
-    ?>
+?>
+
     </div>
 
 </body>

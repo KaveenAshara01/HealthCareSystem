@@ -52,6 +52,7 @@ body{
     width: 92%;
     transition: 0.2s;
     outline: none;
+    
 }
 
 .input-text{
@@ -72,6 +73,27 @@ body{
     appearance: none;
     border-radius: .25rem;
     transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    
+}
+.input-text-popup{
+    border: 1px solid #e9ecef;
+    font-size: 14px;
+    line-height: 26px;
+    background-color: #fff;
+    display: block;
+    width: 100%;
+    padding: .375rem .75rem;
+    font-weight: 300;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    margin-bottom: 20px;
 }
 
 .input-text:hover{
@@ -231,6 +253,18 @@ body{
     position: relative;
     transition: all 5s ease-in-out;
   }
+  .popupedit {
+    max-height: 80vh; /* Limits the popup height to 80% of the viewport */
+    overflow-y: auto; /* Enables vertical scrolling */
+    padding: 20px;
+    border-radius: 5px;
+    background: #fff;
+    width: 50%; /* Adjust width as needed */
+    margin: 50px auto;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+}
+
   
   .popup h2 {
     margin-top: 0;

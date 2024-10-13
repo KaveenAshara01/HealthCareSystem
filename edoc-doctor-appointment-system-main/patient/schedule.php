@@ -1,9 +1,4 @@
 
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,52 +61,43 @@
 
 <body>
     <?php
-    session_start();
-    if (!isset($_SESSION["user"]) || ($_SESSION["user"] == "" || $_SESSION['usertype'] != 'p')) {
-        header("location: ../login.php");
-        exit();
-    }
-    $useremail = $_SESSION["user"];
+session_start();
+if (!isset($_SESSION["user"]) || ($_SESSION["user"] == "" || $_SESSION['usertype'] != 'p')) {
+    header("location: ../login.php");
+    exit();
+}
+$useremail = $_SESSION["user"];
 
-    include("../connection.php");
-    $sqlmain = "SELECT * FROM patient WHERE pemail=?";
-    $stmt = $database->prepare($sqlmain);
-    $stmt->bind_param("s", $useremail);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $userfetch = $result->fetch_assoc();
-    $userid = $userfetch["pid"];
-    $username = $userfetch["pname"];
+include("../connection.php");
+$sqlmain = "SELECT * FROM patient WHERE pemail=?";
+$stmt = $database->prepare($sqlmain);
+$stmt->bind_param("s", $useremail);
+$stmt->execute();
+$result = $stmt->get_result();
+$userfetch = $result->fetch_assoc();
+$userid = $userfetch["pid"];
+$username = $userfetch["pname"];
 
-    // Doctor name passed from previous page
-    $doctorName = $_POST['search'];
+// Check if the search field is set to avoid undefined key warnings
+$doctorName = isset($_POST['search']) ? $_POST['search'] : '';
 
-    date_default_timezone_set('Asia/Kolkata');
-    $today = date('Y-m-d');
+date_default_timezone_set('Asia/Kolkata');
+$today = date('Y-m-d');
 
-    // $sqlmain = "SELECT * FROM schedule 
-    //             INNER JOIN doctor ON schedule.docid = doctor.docid 
-    //             WHERE schedule.scheduledate >= ? AND doctor.docname = ?
-    //             ORDER BY schedule.scheduledate ASC";
+// SQL query to fetch schedules
+$sqlmain = "SELECT schedule.*, schedule.price, doctor.docname, venue.name AS venue_name, venue.address AS venue_address 
+            FROM schedule 
+            INNER JOIN doctor ON schedule.docid = doctor.docid 
+            INNER JOIN venue ON schedule.venue_id = venue.venue_id
+            WHERE schedule.scheduledate >= ? AND LOWER(doctor.docname) LIKE LOWER(CONCAT('%', ?, '%'))
+            ORDER BY schedule.scheduledate ASC";
 
-    // $sqlmain = "SELECT * FROM schedule 
-    //         INNER JOIN doctor ON schedule.docid = doctor.docid 
-    //         WHERE schedule.scheduledate >= ? AND LOWER(doctor.docname) LIKE LOWER(CONCAT('%', ?, '%'))
-    //         ORDER BY schedule.scheduledate ASC";
+$stmt = $database->prepare($sqlmain);
+$stmt->bind_param("ss", $today, $doctorName);
+$stmt->execute();
+$result = $stmt->get_result();
+?>
 
-$sqlmain = "SELECT schedule.*, doctor.docname, venue.name AS venue_name, venue.address AS venue_address 
-FROM schedule 
-INNER JOIN doctor ON schedule.docid = doctor.docid 
-INNER JOIN venue ON schedule.venue_id = venue.venue_id
-WHERE schedule.scheduledate >= ? AND LOWER(doctor.docname) LIKE LOWER(CONCAT('%', ?, '%'))
-ORDER BY schedule.scheduledate ASC";
-
-
-    $stmt = $database->prepare($sqlmain);
-    $stmt->bind_param("ss", $today, $doctorName);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    ?>
     
     <div class="container">
         <div class="menu">
@@ -220,54 +206,35 @@ ORDER BY schedule.scheduledate ASC";
                                 
                                 
                                 <tbody>
-                                        <?php
-                                        if ($result->num_rows == 0) {
-                                            echo '<tr><td colspan="4"><center><img src="../img/notfound.svg" width="25%"><br><p class="heading-main12" style="font-size:20px;color:rgb(49, 49, 49)">No sessions found!</p></center></td></tr>';
-                                        } else {
-                                            // while ($row = $result->fetch_assoc()) {
-                                            //     echo '
-                                            //     <tr>
-                                            //         <td style="width: 25%;">
-                                            //             <div class="dashboard-items search-items">
-                                            //                 <div style="width:100%">
-                                            //                     <div class="h1-search">' . substr($row["title"], 0, 21) . '</div>
-                                            //                     <div class="h3-search">' . substr($row["docname"], 0, 30) . '</div>
-                                            //                     <div class="h4-search">' . $row["scheduledate"] . '<br>Starts: <b>@' . substr($row["scheduletime"], 0, 5) . '</b> (24h)</div>
-                                            //                     <br>
-                                            //                     <a href="booking.php?id=' . $row["scheduleid"] . '"><button class="login-btn btn-primary-soft btn" style="width:100%"><font class="tn-in-text">Book Now</font></button></a>
-                                            //                 </div>
-                                            //             </div>
-                                            //         </td>
-                                            //     </tr>';
-                                            // }
-
-
-
-
-                                            while ($row = $result->fetch_assoc()) {
-                                                echo '
+                                        <?php if ($result->num_rows == 0): ?>
+                                            <tr><td colspan="4"><center>No sessions found!</center></td></tr>
+                                        <?php else: ?>
+                                            <?php while ($row = $result->fetch_assoc()): ?>
                                                 <tr>
                                                     <td style="width: 25%;">
                                                         <div class="dashboard-items search-items">
-                                                            <div style="width:100%">
-                                                                <div class="h1-search">' . substr($row["title"], 0, 21) . '</div>
-                                                                <div class="h3-search">' . substr($row["docname"], 0, 30) . '</div>
-                                                                <div class="h4-search">' . $row["scheduledate"] . '<br>Starts: <b>@' . substr($row["scheduletime"], 0, 5) . '</b> (24h)</div>
-                                                                <div class="h4-search">Venue: <b>' . $row["venue_name"] . '</b><br>Address: <b>' . $row["venue_address"] . '</b></div>
-                                                                <br>
-                                                                <a href="booking.php?id=' . $row["scheduleid"] . '"><button class="login-btn btn-primary-soft btn" style="width:100%"><font class="tn-in-text">Book Now</font></button></a>
+                                                            <div>
+                                                                <div class="h1-search"><?= substr($row["title"], 0, 21) ?></div>
+                                                                <div class="h3-search"><?= $row["docname"] ?></div>
+                                                                <div class="h4-search">
+                                                                    Date: <?= $row["scheduledate"] ?> | Time: <?= substr($row["scheduletime"], 0, 5) ?>
+                                                                </div>
+                                                                <div class="h4-search">
+                                                                    Venue: <?= $row["venue_name"] ?>, <?= $row["venue_address"] ?>
+                                                                </div>
+                                                                <div class="h4-search">
+                                                                    Price: Rs. <?= number_format($row["price"], 2) ?>
+                                                                </div>
+                                                                <button class="login-btn btn-primary-soft btn" 
+                                                                    onclick="openPaymentPopup(<?= $row['scheduleid'] ?>)">
+                                                                    Book Now
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                </tr>';
-                                            }
-                                            
-
-
-
-
-                                         }
-                                        ?>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -278,7 +245,73 @@ ORDER BY schedule.scheduledate ASC";
         </div>
     </div>
 
+     <div id="paymentPopup" class="overlay" style="display: none;">
+    <div class="popup">
+        <h2>Payment Details</h2>
+        <form id="paymentForm" onsubmit="return validatePaymentForm()">
+            <input type="text" id="cardNumber" class="input-text-popup" placeholder="Card Number (xxxx xxxx xxxx xxxx)" maxlength="19" required oninput="formatCardNumber()">
+            
+            <input type="month" id="expiryDate" class="input-text-popup" required>
+            
+            <input type="password" id="cvv" class="input-text-popup" placeholder="CVV" maxlength="3" required>
+            <input type="hidden" id="sessionId">
+            
+            <button type="button" class="btn btn-primary-gray" onclick="closePaymentPopup()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Pay</button>
+        </form>
+    </div>
+</div>
 
+<script>
+    // Auto-format the card number with spaces every 4 digits
+    function formatCardNumber() {
+        let cardInput = document.getElementById('cardNumber');
+        let value = cardInput.value.replace(/\s+/g, '').replace(/[^0-9]/gi, ''); // Remove spaces and non-digits
+        
+        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value; // Add space every 4 digits
+        cardInput.value = formattedValue;
+    }
+
+    function openPaymentPopup(sessionId) {
+        document.getElementById('sessionId').value = sessionId;
+        document.getElementById('paymentPopup').style.display = 'block';
+    }
+
+    function closePaymentPopup() {
+        document.getElementById('paymentPopup').style.display = 'none';
+    }
+
+    function validatePaymentForm() {
+        const cardNumber = document.getElementById('cardNumber').value.replace(/\s+/g, ''); // Remove spaces for validation
+        const expiryDate = document.getElementById('expiryDate').value;
+        const cvv = document.getElementById('cvv').value;
+
+        // Validate card number (16 digits)
+        if (!/^\d{16}$/.test(cardNumber)) {
+            alert('Invalid card number.');
+            return false;
+        }
+
+        // Validate expiry date (must not be in the past)
+        const currentDate = new Date();
+        const selectedDate = new Date(expiryDate);
+        if (selectedDate < currentDate) {
+            alert('Invalid expiry date.');
+            return false;
+        }
+
+        // Validate CVV (3 digits)
+        if (!/^\d{3}$/.test(cvv)) {
+            alert('Invalid CVV.');
+            return false;
+        }
+
+        // If all validations pass, redirect to booking.php with session ID
+        const sessionId = document.getElementById('sessionId').value;
+        window.location.href = `booking.php?id=${sessionId}`;
+        return false;
+    }
+</script>
 
 </body>
 </html>
